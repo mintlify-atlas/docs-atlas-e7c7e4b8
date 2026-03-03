@@ -25,8 +25,8 @@ Choose your preferred installation method:
     <Steps>
       <Step title="Clone the repository">
         ```bash
-        git clone <repository-url>
-        cd vbb-telegram-bot
+        git clone https://github.com/timur-me/VBB-Project.git
+        cd VBB-Project
         ```
       </Step>
 
@@ -35,7 +35,7 @@ Choose your preferred installation method:
 
         ```toml
         [bot]
-        token = "your_telegram_bot_token_here"
+        token = "7167777777:AaBbCcDdEeFfGgHh"  # Replace with your actual bot token
 
         [settings]
         owner_id = 123456789  # Your Telegram user ID
@@ -70,8 +70,8 @@ Choose your preferred installation method:
     <Steps>
       <Step title="Clone the repository">
         ```bash
-        git clone <repository-url>
-        cd vbb-telegram-bot
+        git clone https://github.com/timur-me/VBB-Project.git
+        cd VBB-Project
         ```
       </Step>
 
@@ -131,7 +131,7 @@ Once the bot is running, follow these steps to plan your first journey:
     The bot will register you automatically and display a welcome message:
 
     ```
-    Welcome in VBB Telegram Bot!
+    Welcome in [Bot Name]!
     Press /menu for starting the dialog.
     Press /help for more information and usage help.
     ```
@@ -249,6 +249,15 @@ Here are the main commands you can use:
 | `/menu` | Open the main interactive menu |
 | `/help` | Display all available commands |
 
+### Owner commands
+
+If you're the bot owner (configured in `config.toml`), you also have access to:
+
+| Command | Description |
+|---------|-------------|
+| `/ping` | Check bot ping and response time |
+| `/stats` | Show bot statistics |
+
 <Note>
 Most interactions happen through the interactive menu system powered by aiogram-dialog, providing a smooth button-based interface.
 </Note>
@@ -326,6 +335,6 @@ Now that you have the bot set up:
 - Experiment with transport mode filters to prefer buses over trains
 - Try the nearby stops feature when you're exploring new areas
 
-<Card title="View source code" icon="github" href="https://github.com/yourusername/vbb-telegram-bot">
+<Card title="View source code" icon="github" href="https://github.com/timur-me/VBB-Project">
   Check out the full source code on GitHub
 </Card>
