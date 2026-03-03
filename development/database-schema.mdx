@@ -1,0 +1,406 @@
+---
+title: Database schema
+description: SQLAlchemy models and database structure for user data, addresses, and journeys
+---
+
+## Overview
+
+The bot uses SQLAlchemy 2.0 async ORM with PostgreSQL. All models are defined in `app/db/models.py` and inherit from a declarative `Base` class.
+
+## Database models
+
+### User model
+
+Stores user preferences and journey settings. Each user has foreign keys to their home and destination addresses.
+
+```python
+class User(Base):
+    __tablename__ = "users"
+    __allow_unmapped__ = True
+
+    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=False)
+    home_address_id = Column(
+        Integer,
+        ForeignKey('addresses.id'),
+        default=None)
+    default_destination_address_id = Column(
+        Integer,
+        ForeignKey('addresses.id'),
+        default=None)
+    walking_speed = Column(String(10), nullable=False, default="normal")
+    max_transfers = Column(Integer, nullable=False, default=4)
+    max_journeys = Column(Integer, nullable=False, default=10)
+    min_transfer_time = Column(Integer, nullable=False, default=0)
+    arrival_time = Column(Time, nullable=False, default=get_current_time)
+    check_time = Column(Time, nullable=False, default=get_check_time)
+    regional = Column(Boolean, nullable=False, default=True)
+    suburban = Column(Boolean, nullable=False, default=True)
+    bus = Column(Boolean, nullable=False, default=True)
+    ferry = Column(Boolean, nullable=False, default=True)
+    subway = Column(Boolean, nullable=False, default=True)
+    tram = Column(Boolean, nullable=False, default=True)
+    is_notified = Column(Boolean, nullable=False, default=False)
+
+    home_address: Address = relationship(
+        "Address", foreign_keys=[home_address_id])
+    default_destination_address: Address = relationship(
+        "Address", foreign_keys=[default_destination_address_id]
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "walking_speed IN ('slow', 'normal', 'fast')", name='chk_walking_speed'),
+    )
+```
+
+#### User fields
+
+<ParamField path="id" type="BigInteger" required>
+  Telegram user ID (not auto-incremented)
+</ParamField>
+
+<ParamField path="home_address_id" type="Integer">
+  Foreign key to `addresses.id` for user's home location
+</ParamField>
+
+<ParamField path="default_destination_address_id" type="Integer">
+  Foreign key to `addresses.id` for default journey destination
+</ParamField>
+
+<ParamField path="walking_speed" type="String(10)" default="normal">
+  Walking speed preference for journey calculations. Must be one of: `slow`, `normal`, `fast`
+</ParamField>
+
+<ParamField path="max_transfers" type="Integer" default="4">
+  Maximum number of transfers allowed in journey results
+</ParamField>
+
+<ParamField path="max_journeys" type="Integer" default="10">
+  Maximum number of journey options to fetch from VBB API
+</ParamField>
+
+<ParamField path="min_transfer_time" type="Integer" default="0">
+  Minimum transfer time in minutes between connections
+</ParamField>
+
+<ParamField path="arrival_time" type="Time" default="current_time">
+  Desired arrival time for scheduled journey notifications
+</ParamField>
+
+<ParamField path="check_time" type="Time" default="current_time - 4 hours">
+  Time when bot should send daily journey notification (default 4 hours before arrival)
+</ParamField>
+
+<ParamField path="regional" type="Boolean" default="true">
+  Include regional trains (RE, RB) in journey search
+</ParamField>
+
+<ParamField path="suburban" type="Boolean" default="true">
+  Include S-Bahn suburban trains in journey search
+</ParamField>
+
+<ParamField path="bus" type="Boolean" default="true">
+  Include bus lines in journey search
+</ParamField>
+
+<ParamField path="ferry" type="Boolean" default="true">
+  Include ferry connections in journey search
+</ParamField>
+
+<ParamField path="subway" type="Boolean" default="true">
+  Include U-Bahn subway in journey search
+</ParamField>
+
+<ParamField path="tram" type="Boolean" default="true">
+  Include tram lines in journey search
+</ParamField>
+
+<ParamField path="is_notified" type="Boolean" default="false">
+  Flag indicating whether user has received today's notification (reset daily at midnight)
+</ParamField>
+
+### Address model
+
+Stores geocoded addresses for journey start and end points.
+
+```python
+class Address(Base):
+    __tablename__ = "addresses"
+    __allow_unmapped__ = True
+
+    id = Column(Integer,
+                Sequence('addresses_id_seq'),
+                primary_key=True,
+                unique=True,
+                autoincrement=True)
+    street_name = Column(String(100))
+    house_number = Column(Integer)
+    city = Column(String(50))
+    plz = Column(String(10))
+    latitude = Column(Float)
+    longitude = Column(Float)
+    created_by_id = Column(BigInteger)
+```
+
+#### Address fields
+
+<ParamField path="id" type="Integer" required>
+  Auto-incrementing primary key
+</ParamField>
+
+<ParamField path="street_name" type="String(100)">
+  Street name (e.g., "Unter den Linden")
+</ParamField>
+
+<ParamField path="house_number" type="Integer">
+  House number on the street
+</ParamField>
+
+<ParamField path="city" type="String(50)">
+  City name (e.g., "Berlin", "Potsdam")
+</ParamField>
+
+<ParamField path="plz" type="String(10)">
+  Postal code (Postleitzahl)
+</ParamField>
+
+<ParamField path="latitude" type="Float" required>
+  Geographic latitude coordinate
+</ParamField>
+
+<ParamField path="longitude" type="Float" required>
+  Geographic longitude coordinate
+</ParamField>
+
+<ParamField path="created_by_id" type="BigInteger">
+  Telegram user ID who created this address
+</ParamField>
+
+### JourneyDB model
+
+Stores saved journeys with refresh tokens for updates.
+
+```python
+class JourneyDB(Base):
+    __tablename__ = "journeys"
+    __allow_unmapped__ = True
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    refresh_token = Column(String(1000))
+    created_by_id = Column(BigInteger)
+    created_at = Column(DateTime, default=get_current_datetime)
+```
+
+#### JourneyDB fields
+
+<ParamField path="id" type="UUID" required>
+  Unique journey identifier (auto-generated UUID4)
+</ParamField>
+
+<ParamField path="refresh_token" type="String(1000)">
+  VBB API refresh token for retrieving updated journey data
+</ParamField>
+
+<ParamField path="created_by_id" type="BigInteger">
+  Telegram user ID who saved this journey
+</ParamField>
+
+<ParamField path="created_at" type="DateTime" default="current_datetime">
+  Timestamp when journey was saved (Europe/Berlin timezone)
+</ParamField>
+
+## Relationships
+
+### User-Address relationship
+
+Each user has two optional address relationships:
+
+```python
+home_address: Address = relationship(
+    "Address", foreign_keys=[home_address_id])
+default_destination_address: Address = relationship(
+    "Address", foreign_keys=[default_destination_address_id]
+)
+```
+
+This allows:
+- Multiple users to share the same address (many-to-one)
+- Users without configured addresses (nullable foreign keys)
+- Efficient address reuse (no duplicate coordinates)
+
+### Accessing relationships
+
+```python
+user = await session.get_user(user_id)
+home = await session.get_address(user.home_address_id)
+destination = await session.get_address(user.default_destination_address_id)
+
+print(f"Journey from {home.street_name} to {destination.street_name}")
+```
+
+## Timezone handling
+
+All timestamp defaults use Berlin timezone:
+
+```python
+def get_now():
+    berlin_timezone = pytz.timezone("Europe/Berlin")
+    return berlin_timezone.localize(datetime.now())
+
+def get_current_datetime():
+    return get_now()
+
+def get_current_time():
+    return get_now().time()
+
+def get_check_time():
+    return get_now() - timedelta(hours=4)
+```
+
+This ensures:
+- Consistent time handling across daylight saving transitions
+- Correct arrival times for Berlin/Brandenburg region
+- Proper notification scheduling
+
+## Database session management
+
+The application uses async session management with context managers:
+
+```python
+# Session injected by middleware (in handlers)
+async def handler(message: Message, f: FMT, **kwargs):
+    user = await f.db.get_user(message.from_user.id)
+    # Session auto-commits on success, rolls back on error
+
+# Manual session (in background jobs)
+async with sessionmanager() as session:
+    users = await session.get_registered_users()
+    for user in users:
+        await session.update_notified(user, True)
+```
+
+## Query examples
+
+### Get registered users
+
+Users with both home and destination addresses configured:
+
+```python
+async def get_registered_users(session):
+    stmt = select(User).where(
+        User.home_address_id.isnot(None),
+        User.default_destination_address_id.isnot(None)
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+### Create new user
+
+```python
+async def create_user(session, telegram_id: int):
+    user = User(id=telegram_id)
+    session.add(user)
+    await session.commit()
+    return user
+```
+
+### Update user preferences
+
+```python
+async def update_preferences(session, user: User, **kwargs):
+    for key, value in kwargs.items():
+        setattr(user, key, value)
+    await session.commit()
+```
+
+### Create address from location
+
+```python
+async def create_address(session, location: Location, user_id: int):
+    address = Address(
+        latitude=location.latitude,
+        longitude=location.longitude,
+        created_by_id=user_id
+    )
+    session.add(address)
+    await session.commit()
+    return address
+```
+
+## Database migrations
+
+The bot uses Alembic for database migrations. Migration files track schema changes:
+
+```bash
+# Create new migration
+alembic revision --autogenerate -m "Add new field to User"
+
+# Apply migrations
+alembic upgrade head
+
+# Rollback one migration
+alembic downgrade -1
+```
+
+## Constraints and validation
+
+### Check constraints
+
+The `walking_speed` field has a database-level constraint:
+
+```sql
+CONSTRAINT chk_walking_speed CHECK (walking_speed IN ('slow', 'normal', 'fast'))
+```
+
+Invalid values are rejected by the database before commit.
+
+### Nullable vs. required
+
+- `id`, `walking_speed`, journey preferences: **Required** (NOT NULL)
+- `home_address_id`, `default_destination_address_id`: **Optional** (nullable)
+- Address fields: Most optional except `id`, `latitude`, `longitude`
+
+## Best practices
+
+### Always use async/await
+
+```python
+# Correct
+user = await session.get_user(user_id)
+
+# Incorrect (will raise error)
+user = session.get_user(user_id)
+```
+
+### Use relationships for address access
+
+```python
+# Less efficient (two queries)
+home = await session.get_address(user.home_address_id)
+
+# More efficient (single query with joinedload)
+stmt = select(User).options(
+    joinedload(User.home_address)
+).where(User.id == user_id)
+user = await session.execute(stmt)
+```
+
+### Handle missing addresses gracefully
+
+```python
+if user.home_address_id is None:
+    await message.answer("Please set your home address first")
+    return
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="VBB API integration" icon="plug" href="/development/vbb-api-integration">
+    Learn how journey data is fetched from the VBB API
+  </Card>
+  <Card title="Background services" icon="clock" href="/development/background-services">
+    Understand how scheduled notifications use the database
+  </Card>
+</CardGroup>

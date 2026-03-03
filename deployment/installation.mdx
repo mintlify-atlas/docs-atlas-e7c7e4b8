@@ -1,0 +1,135 @@
+---
+title: Manual installation
+description: Install and run the VBB Telegram Bot manually on your system
+---
+
+This guide walks you through installing the VBB Telegram Bot manually without Docker. This method gives you direct control over the Python environment and dependencies.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Python 3.12 or higher
+- PostgreSQL database server
+- pip (Python package manager)
+- Git (to clone the repository)
+
+<Warning>
+  You'll need a Telegram Bot token from [@BotFather](https://t.me/BotFather) before running the bot. Message BotFather with `/newbot` to create a new bot and receive your token.
+</Warning>
+
+## Installation steps
+
+<Steps>
+  <Step title="Create a virtual environment">
+    Create a new Python virtual environment to isolate the bot's dependencies:
+
+    ```bash
+    python -m venv .venv
+    ```
+
+    This creates a `.venv` directory containing the isolated Python environment.
+  </Step>
+
+  <Step title="Activate the virtual environment">
+    Activate the virtual environment based on your operating system:
+
+    <CodeGroup>
+      ```bash Linux/MacOS
+      source .venv/bin/activate
+      ```
+
+      ```powershell Windows
+      ./.venv/Scripts/activate.ps1
+      ```
+    </CodeGroup>
+
+    Your terminal prompt should now show `(.venv)` indicating the virtual environment is active.
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required Python packages from the requirements file:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    This installs the following core dependencies:
+    - `aiogram` (v3.6.0) - Telegram Bot framework
+    - `aiogram_dialog` - UI dialog system
+    - `asyncpg` (v0.29.0) - PostgreSQL async driver
+    - `sqlalchemy` (v2.0.30) - Database ORM
+    - `apscheduler` (v3.10.4) - Background task scheduler
+    - `aiohttp` (v3.9.5) - HTTP client for VBB API
+    - `geopy` (v2.4.1) - Geolocation parsing
+    - `toml` (v0.10.2) - Configuration file parser
+  </Step>
+
+  <Step title="Configure the bot">
+    Copy the example configuration file and edit it with your details:
+
+    ```bash
+    cp example.toml config.toml
+    ```
+
+    See the [Configuration](/deployment/configuration) page for detailed information on all configuration options.
+  </Step>
+
+  <Step title="Set up the database">
+    Ensure your PostgreSQL server is running and create a database for the bot:
+
+    ```sql
+    CREATE DATABASE vbb;
+    ```
+
+    Update the `database_url` in your `config.toml` file with your PostgreSQL connection string.
+  </Step>
+
+  <Step title="Run the bot">
+    Start the bot using Python's module execution:
+
+    ```bash
+    python -m app
+    ```
+
+    The bot will initialize the database schema automatically on first run and start listening for Telegram messages.
+  </Step>
+</Steps>
+
+## Verifying the installation
+
+Once the bot is running, you should see log output indicating successful startup. Test the bot by:
+
+1. Opening Telegram and searching for your bot by username
+2. Sending the `/start` command
+3. Verifying you receive a response from the bot
+
+## Troubleshooting
+
+### Database connection errors
+
+If you encounter database connection errors, verify:
+- PostgreSQL is running on the expected host and port
+- The database specified in `config.toml` exists
+- The database credentials are correct
+- The database user has appropriate permissions
+
+### Module import errors
+
+If you see import errors when running the bot:
+- Ensure the virtual environment is activated
+- Verify all dependencies installed correctly with `pip list`
+- Try reinstalling dependencies with `pip install -r requirements.txt --force-reinstall`
+
+### Bot token errors
+
+If the bot fails to connect to Telegram:
+- Verify your bot token in `config.toml` is correct
+- Ensure there are no extra spaces or quotes in the token
+- Confirm the bot hasn't been deleted in BotFather
+
+## Next steps
+
+- Configure the bot's settings in [Configuration](/deployment/configuration)
+- Set up automated deployment with [Docker](/deployment/docker)
+- Learn about the bot's features in the user guide

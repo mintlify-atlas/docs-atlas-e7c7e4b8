@@ -1,0 +1,269 @@
+---
+title: User preferences
+description: Configure your journey planning preferences including walking speed, transfers, and timing
+---
+
+The VBB Telegram Bot allows you to customize various preferences that affect how journeys are planned and presented. These settings help tailor the journey results to match your personal travel style and requirements.
+
+## Accessing preferences
+
+All user preferences can be configured through the settings menu:
+
+<Steps>
+  <Step title="Open main menu">
+    Access the bot's main menu in your Telegram chat.
+  </Step>
+  
+  <Step title="Navigate to settings">
+    Select the settings option to view your current configuration.
+  </Step>
+  
+  <Step title="View all preferences">
+    The settings window displays all your current preferences and provides buttons to modify them.
+  </Step>
+</Steps>
+
+## Walking speed
+
+Walking speed affects how much time the journey planner allocates for walking segments (to/from stops and during transfers).
+
+### Available options
+
+- **Slow** 🐢: Extra time for walking segments (recommended for reduced mobility)
+- **Normal** 🚶: Standard walking pace (default)
+- **Fast** 🏃: Quicker walking pace (less time allocated for walking)
+
+### Changing walking speed
+
+The walking speed setting uses a toggle button that cycles through the three options:
+
+<Steps>
+  <Step title="Locate walking speed setting">
+    In the settings menu, find the "Walking speed" toggle showing your current setting.
+  </Step>
+  
+  <Step title="Tap to cycle options">
+    Each tap cycles to the next speed: Slow → Normal → Fast → Slow
+  </Step>
+  
+  <Step title="Confirm selection">
+    The change is saved immediately when you select a new speed.
+  </Step>
+</Steps>
+
+<Tip>
+  If you often miss connections, try setting a slower walking speed to ensure more realistic transfer times.
+</Tip>
+
+## Maximum transfers
+
+This setting limits the number of times you're willing to change vehicles during a single journey.
+
+- **Default value**: 4 transfers
+- **Range**: Typically 0-10 transfers
+- **Effect**: Journeys requiring more transfers than your limit won't be shown
+
+### When to adjust
+
+- **Fewer transfers (1-2)**: If you prefer simpler routes with fewer changes, even if they take longer
+- **More transfers (4-6)**: If you want to see all possible options, including complex routes that might be faster
+
+<Steps>
+  <Step title="Select change max transfers">
+    In settings, tap "Change max. transfers amount".
+  </Step>
+  
+  <Step title="Enter new value">
+    Type the number of maximum transfers you want to allow.
+  </Step>
+  
+  <Step title="Confirm change">
+    The setting is saved, and you return to the settings overview.
+  </Step>
+</Steps>
+
+<Note>
+  Setting maximum transfers to 0 will only show direct connections with no changes.
+</Note>
+
+## Maximum journeys
+
+This setting controls how many different journey options the bot shows you.
+
+- **Default value**: 10 journeys
+- **Range**: Typically 1-20 journeys
+- **Effect**: Determines pagination size for journey results
+
+### Choosing the right value
+
+- **Fewer journeys (3-5)**: See only the best options without information overload
+- **More journeys (10-15)**: Get comprehensive options to choose from, including later departures
+
+<Steps>
+  <Step title="Select change max journeys">
+    In settings, tap "Change max. journeys amount".
+  </Step>
+  
+  <Step title="Enter new value">
+    Type the number of journey options you want to see.
+  </Step>
+  
+  <Step title="Confirm change">
+    The new value is saved immediately.
+  </Step>
+</Steps>
+
+<Tip>
+  For daily commute notifications, 5-8 journeys is usually sufficient. For exploring new routes, 10-15 provides more flexibility.
+</Tip>
+
+## Minimum transfer time
+
+This adds a buffer to the minimum connection time between different transport lines during transfers.
+
+- **Default value**: 0 minutes
+- **Range**: 0-15 minutes (recommended)
+- **Effect**: Adds extra time margin to prevent missed connections
+
+### Use cases
+
+- **0 minutes**: Trust the standard connection times (includes platform-to-platform walking)
+- **2-3 minutes**: Small buffer for peace of mind
+- **5+ minutes**: Extra buffer if you walk slowly or are unfamiliar with transfer stations
+
+<Steps>
+  <Step title="Select change min transfer time">
+    In settings, tap "Change min. transfer time".
+  </Step>
+  
+  <Step title="Enter buffer time">
+    Type the number of additional minutes you want between connections.
+  </Step>
+  
+  <Step title="Confirm change">
+    The setting is saved immediately.
+  </Step>
+</Steps>
+
+<Warning>
+  Setting a high minimum transfer time (10+ minutes) may eliminate many valid journey options, as the planner will exclude connections it deems too tight.
+</Warning>
+
+## Arrival time
+
+The time you need to arrive at your destination. Used for both manual journey planning and automated notifications.
+
+- **Format**: 24-hour time (HH:MM)
+- **Default**: Current time when first set
+- **Effect**: Journey planner shows routes that arrive by this time
+
+### Setting arrival time
+
+<Steps>
+  <Step title="Select change arrival time">
+    In settings, tap "Change arrival time".
+  </Step>
+  
+  <Step title="Enter time">
+    Type the time in 24-hour format, e.g., `09:00` for 9:00 AM.
+  </Step>
+  
+  <Step title="Confirm change">
+    The new arrival time is saved.
+  </Step>
+</Steps>
+
+<Tip>
+  Set your arrival time 5-10 minutes before you actually need to be somewhere to build in a safety buffer.
+</Tip>
+
+## Check time
+
+The time when the bot sends you automatic daily journey notifications.
+
+- **Format**: 24-hour time (HH:MM)
+- **Default**: 4 hours before current time when first set
+- **Effect**: Determines when you receive morning commute notifications
+
+### Setting check time
+
+<Steps>
+  <Step title="Select change check time">
+    In settings, tap "Change check time".
+  </Step>
+  
+  <Step title="Enter time">
+    Type the time in 24-hour format, e.g., `07:00` for 7:00 AM.
+  </Step>
+  
+  <Step title="Confirm change">
+    The new check time is saved.
+  </Step>
+</Steps>
+
+<Note>
+  See [Automated notifications](/features/notifications) for complete information about the notification system.
+</Note>
+
+## Viewing your current settings
+
+The settings overview displays all your current configuration:
+
+```
+⚙️ Settings window:
+
+Name: [Your Name]
+ID: [Your Telegram ID]
+
+Addresses count: [Number]
+🏚️ Home address: [Your home address]
+🏢 Destination address: [Your destination]
+
+🕚 Arrival time: [HH:MM]
+⏰ Check time: [HH:MM]
+
+>-------------------------<
+Walking speed: [Current speed]
+Minimum transfer time: [X] min.
+Maximum transfer amount: [X].
+Maximum journeys amount: [X].
+```
+
+## Preferences impact on journey planning
+
+Your preferences work together to customize journey results:
+
+1. **Walking speed** affects walking segment durations
+2. **Maximum transfers** filters out complex routes
+3. **Minimum transfer time** ensures comfortable connection times
+4. **Maximum journeys** determines how many options you see
+5. **Arrival time** sets the target arrival moment
+6. **Transport types** control which modes are used (see [Transport types](/configuration/transport-types))
+
+<Tip>
+  Experiment with different settings to find what works best for your travel style. You can always change them back.
+</Tip>
+
+## Best practices
+
+<Accordion title="Balance realism and convenience">
+  Set preferences that match your actual walking pace and comfort level with transfers. Overly optimistic settings may lead to missed connections.
+</Accordion>
+
+<Accordion title="Adjust for different scenarios">
+  Consider having different settings for:
+  - Daily commute (fewer options, stricter preferences)
+  - Weekend exploration (more options, flexible settings)
+  - Traveling with luggage (slower walking speed, more transfer time)
+</Accordion>
+
+<Accordion title="Review settings periodically">
+  Your preferences may need adjustment as:
+  - You become more familiar with the transport system
+  - Seasons change (walking speed in winter vs. summer)
+  - Your physical condition or mobility changes
+</Accordion>
+
+<Accordion title="Use minimum transfer time wisely">
+  Rather than adding a large buffer to all connections, start with 0-2 minutes and increase only if you frequently experience tight connections at specific stations.
+</Accordion>

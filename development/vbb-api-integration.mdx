@@ -1,0 +1,530 @@
+---
+title: VBB API integration
+description: Integration with the VBB (Verkehrsverbund Berlin-Brandenburg) public transport API
+---
+
+## Overview
+
+The bot integrates with the VBB REST API v6 to fetch real-time public transport data for the Berlin-Brandenburg region. All API wrapper functions are in `app/vbb/func.py`.
+
+**Base URL**: `https://v6.vbb.transport.rest`
+
+## Core API functions
+
+### Journey search
+
+The primary function for finding public transport connections between two locations.
+
+```python
+async def get_journeys(user: User = None,
+                       session=None,
+                       location: Location = None,
+                       now: bool = False,
+                       home_address: Address = None,
+                       destination_address: Address = None,
+                       **kwargs):
+    from app.utils import address_util
+    from app.vbb.utils import time_to_iso
+    from app.vbb.models import JourneyFactory
+
+    if home_address is None and destination_address is None:
+        home_address: Address = await session.get_address(user.home_address_id)
+        if location is None:
+            destination_address: Address = await session.get_address(user.default_destination_address_id)
+        else:
+            destination_address: Address = await Helper.get_address_from_location(location)
+
+    path = "/journeys"
+
+    params = {
+        # Origin coordinates and address
+        "from.latitude": home_address.latitude,
+        "from.longitude": home_address.longitude,
+        "from.address": address_util.build_address(home_address),
+        # Destination coordinates and address
+        "to.latitude": destination_address.latitude,
+        "to.longitude": destination_address.longitude,
+        "to.address": address_util.build_address(destination_address),
+    }
+
+    params.update({
+        "walkingSpeed": user.walking_speed,
+        "transfers": user.max_transfers,
+        "results": user.max_journeys,
+        "transferTime": user.min_transfer_time,
+        "regional": user.regional,
+        "suburban": user.suburban,
+        "bus": user.bus,
+        "ferry": user.ferry,
+        "subway": user.subway,
+        "tram": user.tram
+    })
+
+    params.update(kwargs)
+
+    if not now:
+        params.update(
+            {"arrival": time_to_iso(user.arrival_time)}
+        )
+
+    journeys_ans: dict = await fetch_data(base_url, path, params)
+
+    journeys = [
+        JourneyFactory.create(journey)
+        for journey in journeys_ans.get("journeys")
+    ]
+
+    return journeys
+```
+
+#### Parameters
+
+<ParamField path="user" type="User">
+  User object with journey preferences (walking speed, max transfers, etc.)
+</ParamField>
+
+<ParamField path="session" type="DBSession">
+  Database session for fetching addresses
+</ParamField>
+
+<ParamField path="location" type="Location">
+  Override destination with a Telegram location (latitude/longitude)
+</ParamField>
+
+<ParamField path="now" type="bool" default="false">
+  If `true`, search for journeys departing now. If `false`, use user's `arrival_time`
+</ParamField>
+
+<ParamField path="home_address" type="Address">
+  Override user's home address
+</ParamField>
+
+<ParamField path="destination_address" type="Address">
+  Override user's destination address
+</ParamField>
+
+#### Returns
+
+<ResponseField name="journeys" type="list[Journey]">
+  List of Journey objects, each containing:
+  - `type`: Journey type (usually "journey")
+  - `legs`: List of Leg objects (individual transport segments)
+  - `refresh_token`: Token for refreshing journey data
+  - `cycle`: Carbon footprint and environmental data
+</ResponseField>
+
+#### Example usage
+
+```python
+# Get journeys for user's default route
+journeys = await get_journeys(user, session, now=True)
+
+# Get journeys to a custom location
+custom_location = Location(latitude=52.5200, longitude=13.4050)
+journeys = await get_journeys(user, session, location=custom_location)
+
+# Get journeys with overridden parameters
+journeys = await get_journeys(user, session, transfers=2, walkingSpeed="fast")
+```
+
+### Stop departures
+
+Fetch upcoming departures from a specific stop.
+
+```python
+async def get_stop_departures(stop_id: str, **kwargs):
+    path = f"/stops/{stop_id}/departures"
+
+    params = {
+        "duration": 30,
+        "results": 50,
+    }
+
+    params.update(kwargs)
+
+    departures: dict = await fetch_data(base_url, path, params)
+
+    return departures.get("departures", [])
+```
+
+#### Parameters
+
+<ParamField path="stop_id" type="string" required>
+  VBB stop ID (e.g., "900000100003" for Berlin Hauptbahnhof)
+</ParamField>
+
+<ParamField path="duration" type="int" default="30">
+  Time window in minutes for fetching departures
+</ParamField>
+
+<ParamField path="results" type="int" default="50">
+  Maximum number of departures to return
+</ParamField>
+
+#### Returns
+
+<ResponseField name="departures" type="list[dict]">
+  List of departure objects with:
+  - `when`: ISO timestamp of departure
+  - `line`: Line object (name, product, operator)
+  - `direction`: Destination of the service
+  - `stop`: Stop object with name and location
+</ResponseField>
+
+#### Example usage
+
+```python
+# Get next 50 departures from Berlin Hauptbahnhof
+departures = await get_stop_departures("900000100003")
+
+for dep in departures:
+    print(f"{dep['line']['name']} to {dep['direction']} at {dep['when']}")
+```
+
+### Nearby stops
+
+Find public transport stops near a location.
+
+```python
+async def get_reachable_stops(user_id: int, f, distance=500, **kwargs):
+    user = await f.db.get_user(user_id)
+    address = await f.db.get_address(user.home_address_id)
+
+    latitude = address.latitude
+    longitude = address.longitude
+
+    path = "/locations/nearby"
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "distance": distance,
+        "linesOfStops": True
+    }
+
+    params.update(kwargs)
+
+    stops_information = await fetch_data(base_url, path, params)
+
+    # Fetch departures for each stop in parallel
+    await asyncio.gather(
+        *[
+            fetch_departures(stop) for stop in stops_information
+        ]
+    )
+
+    return stops_information
+```
+
+#### Parameters
+
+<ParamField path="user_id" type="int" required>
+  Telegram user ID
+</ParamField>
+
+<ParamField path="f" type="FMT">
+  Middleware data object with database session
+</ParamField>
+
+<ParamField path="distance" type="int" default="500">
+  Search radius in meters
+</ParamField>
+
+#### Returns
+
+<ResponseField name="stops" type="list[dict]">
+  List of stop objects with:
+  - `id`: VBB stop ID
+  - `name`: Stop name
+  - `location`: Latitude/longitude coordinates
+  - `distance`: Distance from query point in meters
+  - `departures`: List of upcoming departures (added by function)
+</ResponseField>
+
+### Update stop information
+
+Get detailed information about a stop including current departures.
+
+```python
+async def update_stop_information(stop_id: str, **kwargs):
+    departures = await get_stop_departures(stop_id, linesOfStops=True, **kwargs)
+
+    if not departures:
+        return None
+
+    stop = departures[0].get("stop")
+
+    stop["departures"] = departures
+
+    return stop
+```
+
+## HTTP client
+
+All API calls use the shared `fetch_data` function:
+
+```python
+async def fetch_data(base_url, path, params):
+    # Use urljoin to safely join the base URL and the path
+    full_url = urljoin(base_url, path)
+    params = {k: str(v) if isinstance(v, bool)
+    else v for k, v in params.items()}
+
+    async with aiohttp.ClientSession() as session:
+        logging.debug(f"Fetching data from {full_url}?{urlencode(params)}")
+        async with session.get(full_url, params=params) as response:
+            response.raise_for_status()
+            return await response.json()
+```
+
+### Features
+
+- **Async**: Uses aiohttp for non-blocking HTTP requests
+- **Boolean conversion**: Converts Python booleans to strings for URL parameters
+- **Error handling**: Raises HTTPError on non-2xx status codes
+- **Logging**: Logs full URL with parameters for debugging
+
+## Data models
+
+API responses are parsed into typed dataclasses in `app/vbb/models/`.
+
+### Journey model
+
+```python
+@dataclass
+class Journey:
+    type: str
+    legs: list[Leg]
+    refresh_token: str
+    cycle: Cycle
+
+    def count_transfers(self):
+        counter = 0
+        for leg in self.legs:
+            if leg.transport_mode != TransportMode.WALKING:
+                counter += 1
+        return max(counter - 1, 0)
+```
+
+#### Journey fields
+
+<ResponseField name="type" type="string">
+  Journey type, typically "journey"
+</ResponseField>
+
+<ResponseField name="legs" type="list[Leg]">
+  List of journey segments (walking, bus, train, etc.)
+</ResponseField>
+
+<ResponseField name="refresh_token" type="string">
+  Opaque token for refreshing journey data from API
+</ResponseField>
+
+<ResponseField name="cycle" type="Cycle">
+  Environmental impact data (CO2 emissions, etc.)
+</ResponseField>
+
+### Leg model
+
+Each leg represents one segment of a journey:
+
+```python
+@dataclass
+class Leg:
+    origin: Location
+    destination: Location
+    departure: datetime
+    arrival: datetime
+    transport_mode: TransportMode
+    line: Line  # For public transport legs
+    walking: bool
+    distance: int  # meters
+    invalid_leg: bool
+```
+
+#### Leg fields
+
+<ResponseField name="origin" type="Location">
+  Starting point with name, coordinates, and stop ID (if applicable)
+</ResponseField>
+
+<ResponseField name="destination" type="Location">
+  End point with name, coordinates, and stop ID (if applicable)
+</ResponseField>
+
+<ResponseField name="departure" type="datetime">
+  Departure timestamp (Berlin timezone)
+</ResponseField>
+
+<ResponseField name="arrival" type="datetime">
+  Arrival timestamp (Berlin timezone)
+</ResponseField>
+
+<ResponseField name="transport_mode" type="TransportMode">
+  Enum: WALKING, BUS, TRAM, SUBWAY, SUBURBAN, REGIONAL, FERRY
+</ResponseField>
+
+<ResponseField name="line" type="Line">
+  Line information (name, product, operator) for public transport legs
+</ResponseField>
+
+<ResponseField name="walking" type="bool">
+  True if this is a walking segment
+</ResponseField>
+
+<ResponseField name="distance" type="int">
+  Distance in meters
+</ResponseField>
+
+### Line model
+
+```python
+@dataclass
+class Line:
+    type: str
+    id: str
+    name: str
+    mode: str
+    product: str
+    operator: Operator
+```
+
+#### Line fields
+
+<ResponseField name="type" type="string">
+  Resource type, typically "line"
+</ResponseField>
+
+<ResponseField name="id" type="string">
+  Unique line identifier
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Line name as displayed (e.g., "U2", "M10", "S7")
+</ResponseField>
+
+<ResponseField name="mode" type="string">
+  Transport mode (bus, train, tram, subway, etc.)
+</ResponseField>
+
+<ResponseField name="product" type="string">
+  Product category (regional, suburban, bus, etc.)
+</ResponseField>
+
+<ResponseField name="operator" type="Operator">
+  Operating company information
+</ResponseField>
+
+## Factory pattern
+
+All models use factory classes for parsing API responses:
+
+```python
+class JourneyFactory:
+    @staticmethod
+    def create(raw_data):
+        if raw_data is None:
+            return None
+
+        legs = [
+            LegFactory.create(leg)
+            for leg in raw_data.get('legs', [])
+        ]
+
+        return Journey(
+            type=raw_data.get('type'),
+            legs=legs,
+            refresh_token=raw_data.get("refreshToken"),
+            cycle=OthersFactory.create(raw_data.get("cycle"), OthersType.CYCLE)
+        )
+```
+
+This pattern:
+- Handles missing or null data gracefully
+- Recursively parses nested objects
+- Validates data before creating model instances
+- Provides consistent error handling
+
+## Time utilities
+
+The VBB API expects ISO 8601 timestamps:
+
+```python
+from app.vbb.utils import time_to_iso
+
+# Convert Python time to ISO string
+arrival_time = time(8, 30)  # 8:30 AM
+iso_string = time_to_iso(arrival_time)
+# Result: "2026-03-03T08:30:00+01:00"
+```
+
+## Time remaining calculation
+
+```python
+def minutes_left(target_time: datetime) -> int:
+    target_time = target_time.replace(tzinfo=None)
+    now = datetime.now()
+    time_difference = target_time - now
+    minutes_left = time_difference.total_seconds() // 60
+    return int(minutes_left)
+```
+
+Used for displaying "Departs in X minutes" messages.
+
+## API rate limiting
+
+The VBB API has rate limits:
+- **100 requests per minute** per IP address
+- HTTP 429 status code when limit exceeded
+
+The bot handles this through:
+1. **Throttling middleware**: Limits user requests to prevent spam
+2. **Efficient querying**: Only fetches data when needed (not on every message)
+3. **Caching**: Dialog manager caches journey results during pagination
+
+## Error handling
+
+```python
+try:
+    journeys = await get_journeys(user, session)
+except aiohttp.ClientResponseError as e:
+    if e.status == 404:
+        await message.answer("No journeys found")
+    elif e.status == 429:
+        await message.answer("API rate limit exceeded, try again later")
+    else:
+        await message.answer("Error fetching journeys")
+        logging.error(f"VBB API error: {e}")
+except Exception as e:
+    await message.answer("Unexpected error")
+    logging.exception("Error in journey search")
+```
+
+## Testing
+
+API calls can be tested with the `--test` flag:
+
+```bash
+python -m app --test
+```
+
+This enables debug logging for all API requests:
+
+```
+DEBUG: Fetching data from https://v6.vbb.transport.rest/journeys?from.latitude=52.52&from.longitude=13.405...
+```
+
+## API documentation
+
+Full VBB API documentation: [v6.vbb.transport.rest](https://v6.vbb.transport.rest/)
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Database schema" icon="database" href="/development/database-schema">
+    Learn how journey data is stored in the database
+  </Card>
+  <Card title="Background services" icon="clock" href="/development/background-services">
+    Understand how the API is called for scheduled notifications
+  </Card>
+</CardGroup>

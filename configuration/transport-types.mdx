@@ -1,0 +1,298 @@
+---
+title: Transport type preferences
+description: Control which modes of transport are included in your journey plans
+---
+
+The VBB Telegram Bot allows you to customize which types of public transport are included when planning your journeys. This is useful if you prefer certain transport modes over others, or if you want to avoid specific types for any reason.
+
+## Available transport types
+
+The Berlin-Brandenburg (VBB) transport network includes six main transport types that you can enable or disable:
+
+### Regional trains 🚆
+- **Type**: Regional (RE, RB)
+- **Coverage**: Connects Berlin with surrounding Brandenburg region
+- **Speed**: Fast, medium-distance travel
+- **Use case**: Traveling to suburbs or neighboring cities
+- **Default**: Enabled
+
+### Suburban trains 🚈
+- **Type**: S-Bahn
+- **Coverage**: Berlin and close suburbs
+- **Speed**: Fast, frequent service
+- **Use case**: Primary transport within Berlin
+- **Default**: Enabled
+
+### Subway 🚇
+- **Type**: U-Bahn
+- **Coverage**: Central Berlin, underground and elevated
+- **Speed**: Very frequent, fast urban transit
+- **Use case**: Moving within Berlin's urban core
+- **Default**: Enabled
+
+### Tram 🚋
+- **Type**: Straßenbahn (tram/streetcar)
+- **Coverage**: Berlin, especially former East Berlin
+- **Speed**: Moderate, street-level
+- **Use case**: Local travel in tram-served districts
+- **Default**: Enabled
+
+### Bus 🚌
+- **Type**: Bus (regular, MetroBus, ExpressBus)
+- **Coverage**: Comprehensive Berlin and Brandenburg
+- **Speed**: Variable, depends on traffic
+- **Use case**: Areas not served by rail, local travel
+- **Default**: Enabled
+
+### Ferry ⛴️
+- **Type**: Ferry
+- **Coverage**: Select water crossings in Berlin
+- **Speed**: Slow but scenic
+- **Use case**: Crossing rivers and lakes where available
+- **Default**: Enabled
+
+<Note>
+  Walking segments are always included and cannot be disabled, as they're necessary for getting to/from stops and making transfers.
+</Note>
+
+## Configuring transport types
+
+Transport type preferences are configured through the settings menu using a checkbox interface.
+
+<Steps>
+  <Step title="Open settings">
+    Navigate to the settings menu from the bot's main menu.
+  </Step>
+  
+  <Step title="Locate transport types">
+    Scroll to the transport types section, which displays all six types with checkboxes.
+  </Step>
+  
+  <Step title="Toggle transport types">
+    Tap each transport type to enable (✅) or disable (❌) it:
+    - ✅ Green checkmark = Enabled (included in journeys)
+    - ❌ Red X = Disabled (excluded from journeys)
+  </Step>
+  
+  <Step title="Changes save automatically">
+    Each toggle is saved immediately - no confirmation needed.
+  </Step>
+</Steps>
+
+## How transport types affect journeys
+
+When you disable a transport type:
+
+- The journey planner excludes that mode from all journey results
+- Alternative routes using enabled transport types are shown instead
+- If no journey is possible with your enabled types, you may see no results
+
+<Warning>
+  Disabling too many transport types may result in:
+  - Very limited journey options
+  - Longer travel times
+  - No available journeys in some cases
+</Warning>
+
+## Common transport type configurations
+
+### Rail only (fast travel)
+
+Enable:
+- ✅ Regional
+- ✅ Suburban
+- ✅ Subway
+
+Disable:
+- ❌ Tram
+- ❌ Bus
+- ❌ Ferry
+
+**Use case**: Fastest routes, avoiding surface street traffic
+
+### No buses (rail preference)
+
+Enable:
+- ✅ Regional
+- ✅ Suburban
+- ✅ Subway
+- ✅ Tram
+- ✅ Ferry
+
+Disable:
+- ❌ Bus
+
+**Use case**: Prefer fixed-route rail transport, avoid traffic delays
+
+### Urban core only
+
+Enable:
+- ✅ Suburban
+- ✅ Subway
+- ✅ Tram
+- ✅ Bus
+
+Disable:
+- ❌ Regional
+- ❌ Ferry
+
+**Use case**: Traveling within Berlin proper, not to outer regions
+
+### All transport (default)
+
+Enable all six types:
+- ✅ Regional
+- ✅ Suburban
+- ✅ Subway
+- ✅ Tram
+- ✅ Bus
+- ✅ Ferry
+
+**Use case**: Maximum flexibility, shortest possible travel times
+
+## Strategic use of transport preferences
+
+### Avoiding specific lines
+
+While you cannot disable specific lines (like "no U8"), you can:
+
+- Disable an entire transport type
+- Review multiple journey options to find routes that use your preferred lines
+- Use the maximum journeys setting to see more alternatives
+
+### Time-based preferences
+
+Consider adjusting transport types based on time of day:
+
+**Peak hours (rush hour)**:
+- Enable all types for maximum options
+- Having alternatives helps when trains are crowded
+
+**Late night**:
+- Enable buses (night bus network is extensive)
+- Some rail services have reduced frequency
+
+**Weekends**:
+- Consider enabling ferries for scenic routes
+- Less time pressure allows for interesting transport combinations
+
+### Weather-based preferences
+
+In bad weather:
+
+- Prefer underground/covered options (subway, suburban trains)
+- Minimize tram/bus usage (surface street delays)
+
+<Tip>
+  During heavy rain or snow, disabling buses and trams may give you more weather-resistant journey options using underground and covered rail lines.
+</Tip>
+
+## Transport types in combination with other preferences
+
+Transport type settings work together with:
+
+### Walking speed
+- Fewer enabled transport types may require more walking between stations
+- Adjust walking speed if your enabled types create longer walking segments
+
+### Maximum transfers
+- Limiting transport types may necessitate more transfers
+- Consider increasing max transfers if you disable major transport modes
+
+### Minimum transfer time
+- Some transport types have longer platform distances
+- Regional trains may need extra transfer time at major stations
+
+## Default settings
+
+By default, all transport types are enabled:
+
+```
+✅ 🚆 Regional
+✅ 🚈 Suburban
+✅ 🚇 Subway
+✅ 🚋 Tram
+✅ 🚌 Bus
+✅ ⛴️ Ferry
+```
+
+This configuration provides:
+- Maximum journey flexibility
+- Shortest possible travel times
+- Most comprehensive options
+- Suitable for most users
+
+## Viewing current transport settings
+
+Your current transport type preferences are displayed in the settings menu with visual indicators:
+
+- Green checkmark (✅) shows enabled types
+- Red X (❌) shows disabled types
+- Each type is labeled with its emoji and name
+
+## Best practices
+
+<Accordion title="Start with all enabled">
+  Begin with all transport types enabled and only disable types if you have specific reasons. This ensures maximum journey options.
+</Accordion>
+
+<Accordion title="Disable sparingly">
+  Each disabled transport type reduces your journey options. Only disable types you truly want to avoid.
+</Accordion>
+
+<Accordion title="Consider the area">
+  Some Berlin districts rely heavily on specific transport types:
+  - East Berlin: Extensive tram network
+  - West Berlin: More bus-dependent
+  - City center: Dense S-Bahn and U-Bahn coverage
+  
+  Disabling the dominant type in your area may severely limit options.
+</Accordion>
+
+<Accordion title="Test your settings">
+  After changing transport types, request a journey to verify you still get reasonable options. If results are too limited, re-enable some types.
+</Accordion>
+
+<Accordion title="Adjust for special needs">
+  If you have accessibility requirements:
+  - Some older tram/bus models may have limited accessibility
+  - S-Bahn and U-Bahn stations generally have better accessibility
+  - Configure transport types to match your mobility needs
+</Accordion>
+
+## Temporary vs. permanent preferences
+
+Transport type settings are permanent preferences that affect:
+
+- ✅ All future journey queries
+- ✅ Automated daily notifications
+- ✅ Location-based journey planning
+- ✅ Nearby stop departures
+
+<Note>
+  There's currently no "temporary override" feature. If you need different transport types for a special trip, change the settings before planning that journey, then change them back afterward.
+</Note>
+
+## Troubleshooting
+
+<Accordion title="No journeys found">
+  If the bot returns no journey options:
+  1. Check that you have at least 2-3 transport types enabled
+  2. Verify your home and destination addresses are correct
+  3. Try enabling all transport types to see if routes exist
+  4. Your location combination may require specific transport modes
+</Accordion>
+
+<Accordion title="Journeys take much longer than expected">
+  Long journey times may indicate:
+  - Key transport types are disabled
+  - Try enabling additional types, especially regional or suburban trains
+  - The direct transport mode may be disabled
+</Accordion>
+
+<Accordion title="Setting doesn't seem to apply">
+  If changes don't affect results:
+  - Ensure the checkmark visual changed (✅/❌)
+  - Try toggling the type off and back on
+  - Request a new journey query (changes don't affect already-loaded journeys)
+</Accordion>

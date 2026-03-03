@@ -1,80 +1,331 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get started with VBB Telegram Bot and plan your first journey in minutes
 ---
 
-## Get started in three steps
+This guide will help you set up the VBB Telegram Bot and walk you through planning your first journey on the Berlin-Brandenburg public transport network.
 
-Get your documentation site running locally and make your first customization.
+## Prerequisites
 
-### Step 1: Set up your local environment
+Before you begin, you'll need:
+
+- A Telegram account
+- Python 3.8 or higher (for self-hosting)
+- PostgreSQL database (for self-hosting)
+- A Telegram Bot Token from [@BotFather](https://t.me/botfather)
+
+## Installation
+
+Choose your preferred installation method:
+
+<Tabs>
+  <Tab title="Docker (Recommended)">
+    The easiest way to run the bot is with Docker Compose:
+
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone <repository-url>
+        cd vbb-telegram-bot
+        ```
+      </Step>
+
+      <Step title="Configure the bot">
+        Create a `config.toml` file with your bot token and settings:
+
+        ```toml
+        [bot]
+        token = "your_telegram_bot_token_here"
+
+        [settings]
+        owner_id = 123456789  # Your Telegram user ID
+        throttling_rate = 0.5
+        drop_pending_updates = true
+
+        [db]
+        database_url = "postgresql+asyncpg://user:password@db:5432/vbb_bot"
+
+        [api]
+        bot_api_url = "https://api.telegram.org"
+        ```
+
+        <Tip>
+        Get your Telegram user ID by messaging [@userinfobot](https://t.me/userinfobot) on Telegram.
+        </Tip>
+      </Step>
+
+      <Step title="Start the services">
+        ```bash
+        docker-compose up --build
+        ```
+
+        The bot will start automatically along with the PostgreSQL database.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Manual Installation">
+    For manual installation without Docker:
+
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone <repository-url>
+        cd vbb-telegram-bot
+        ```
+      </Step>
+
+      <Step title="Create virtual environment">
+        ```bash
+        python -m venv .venv
+        ```
+      </Step>
+
+      <Step title="Activate virtual environment">
+        <CodeGroup>
+        ```bash Linux/MacOS
+        source .venv/bin/activate
+        ```
+
+        ```powershell Windows
+        ./.venv/Scripts/activate.ps1
+        ```
+        </CodeGroup>
+      </Step>
+
+      <Step title="Install dependencies">
+        ```bash
+        pip install -r requirements.txt
+        ```
+      </Step>
+
+      <Step title="Configure the bot">
+        Create a `config.toml` file with your settings (see Docker tab for configuration example).
+
+        <Note>
+        Make sure your PostgreSQL database is running and accessible at the URL specified in `config.toml`.
+        </Note>
+      </Step>
+
+      <Step title="Run the bot">
+        ```bash
+        python -m app
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## First steps with the bot
+
+Once the bot is running, follow these steps to plan your first journey:
+
+<Steps>
+  <Step title="Start a conversation">
+    Open Telegram and search for your bot, then send the `/start` command:
+
+    ```
+    /start
+    ```
+
+    The bot will register you automatically and display a welcome message:
+
+    ```
+    Welcome in VBB Telegram Bot!
+    Press /menu for starting the dialog.
+    Press /help for more information and usage help.
+    ```
+  </Step>
+
+  <Step title="Open the main menu">
+    Send the `/menu` command to open the interactive menu:
+
+    ```
+    /menu
+    ```
+
+    You'll see several options:
+    - 🏚️ Addresses menu
+    - 👋 Registration menu
+    - 🚌 Get nearby stops
+    - 🗺 Get journeys
+    - ⚙️ Settings
+  </Step>
+
+  <Step title="Set your home address">
+    Before planning journeys, you need to configure your addresses:
+
+    1. Select **🏚️ Addresses menu**
+    2. Click **Add address**
+    3. Enter your home address (e.g., "Alexanderplatz, Berlin")
+    4. Confirm the address from the search results
+    5. Mark it as **🔘 Home** address
+
+    <Tip>
+    The bot uses geocoding to find exact coordinates for your address, ensuring accurate journey planning.
+    </Tip>
+  </Step>
+
+  <Step title="Add a destination address">
+    Repeat the process to add a destination address:
+
+    1. In the **Addresses menu**, click **Add address** again
+    2. Enter your destination (e.g., "Berlin Hauptbahnhof")
+    3. Confirm the location
+    4. Mark it as **🔘 DefaultDestination**
+  </Step>
+
+  <Step title="Plan your first journey">
+    Now you're ready to get route information:
+
+    1. Return to the main menu
+    2. Select **🗺 Get journeys**
+    3. The bot will display journey options from your home to destination
+
+    Each journey shows:
+    - Departure and arrival times
+    - Total duration
+    - All legs (segments) of the journey
+    - Transport lines and directions
+    - Walking times between stops
+
+    Use the **← →** buttons to browse through different route options.
+  </Step>
+
+  <Step title="Customize your settings (Optional)">
+    Fine-tune the bot to your preferences:
+
+    1. Select **⚙️ Settings** from the main menu
+    2. Adjust settings like:
+       - **Walking speed** (slow/normal/fast)
+       - **Min. transfer time** (default: based on your settings)
+       - **Max. transfers** (maximum number of connections)
+       - **Max. journeys** (how many route alternatives to show)
+       - **Transport modes** (enable/disable bus, tram, subway, etc.)
+       - **Arrival time** (for daily notifications)
+       - **Check time** (when to receive daily updates)
+
+    <Note>
+    Settings are saved per user and persist across bot restarts.
+    </Note>
+  </Step>
+</Steps>
+
+## Using geolocation
+
+The bot can find nearby stops using your current location:
+
+<Steps>
+  <Step title="Share your location">
+    In the Telegram chat with your bot, tap the attachment icon (📎) and select **Location**.
+  </Step>
+
+  <Step title="Send live or static location">
+    Choose **Send My Current Location** to share your position.
+
+    The bot will automatically detect the location and show nearby stops.
+  </Step>
+
+  <Step title="View departures">
+    The bot displays:
+    - Nearby stops within 500 meters
+    - Stop names and distances
+    - Next departures from each stop
+    - Line numbers and destinations
+  </Step>
+</Steps>
+
+<Tip>
+You can also plan journeys from your current location by sending your geolocation before selecting "Get journeys."
+</Tip>
+
+## Available commands
+
+Here are the main commands you can use:
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Initialize or reload the bot |
+| `/menu` | Open the main interactive menu |
+| `/help` | Display all available commands |
+
+<Note>
+Most interactions happen through the interactive menu system powered by aiogram-dialog, providing a smooth button-based interface.
+</Note>
+
+## Setting up daily notifications
+
+Get automated journey updates every morning:
+
+<Steps>
+  <Step title="Configure your commute times">
+    1. Go to **⚙️ Settings**
+    2. Click **Change arrival time**
+    3. Enter your desired arrival time (format: `HH:MM`, e.g., `09:00`)
+    4. Click **Change check time**
+    5. Enter when you want to receive the notification (e.g., `07:00`)
+  </Step>
+
+  <Step title="Verify your addresses">
+    Make sure you have both a home and destination address configured. The bot uses these for daily route calculations.
+  </Step>
+
+  <Step title="Receive your first notification">
+    At your configured check time, the bot will automatically send you journey options that arrive at your destination by your specified arrival time.
+
+    <Note>
+    The background service checks every 15 seconds for users who need notifications. Each user receives only one notification per day, which resets at midnight.
+    </Note>
+  </Step>
+</Steps>
+
+## Code reference
+
+The bot's main functionality is implemented in several key modules:
+
+- **Journey planning**: app/vbb/func.py:116 - `get_journeys()` function
+- **Address management**: app/dialogs/addresses.py - Address dialog system
+- **Geolocation handling**: app/handlers/user/geolocation.py:11 - Location message handler
+- **Daily notifications**: app/vbb/service/checker.py:18 - Background journey checker
+- **Settings configuration**: app/dialogs/settings.py - User preferences dialog
+
+## Troubleshooting
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+  <Accordion title="Bot doesn't respond to commands">
+    - Verify the bot is running (`docker-compose ps` or check your terminal)
+    - Check your bot token in `config.toml` is correct
+    - Ensure you've sent `/start` to initialize your user account
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+
+  <Accordion title="Can't find my address">
+    - Try using more specific address details (street number, city name)
+    - Use well-known landmarks or station names
+    - The VBB API uses OpenStreetMap data for geocoding
   </Accordion>
-</AccordionGroup>
 
-### Step 2: Deploy your changes
+  <Accordion title="No journeys found">
+    - Verify both home and destination addresses are set
+    - Check your transport mode filters in settings (at least one must be enabled)
+    - Ensure your addresses are within the VBB service area (Berlin-Brandenburg region)
+  </Accordion>
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
+  <Accordion title="Daily notifications not working">
+    - Confirm both arrival time and check time are configured in settings
+    - Verify the background service is running (check logs for "checking user" messages)
+    - Notifications are sent only once per day and reset at midnight
   </Accordion>
 </AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you have the bot set up:
 
-<CardGroup cols={2}>
+- Explore different journey options by changing your walking speed
+- Add multiple destination addresses for different commute routes
+- Experiment with transport mode filters to prefer buses over trains
+- Try the nearby stops feature when you're exploring new areas
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
+<Card title="View source code" icon="github" href="https://github.com/yourusername/vbb-telegram-bot">
+  Check out the full source code on GitHub
 </Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

@@ -1,0 +1,164 @@
+---
+title: Address management
+description: Configure and manage your home and destination addresses for quick journey planning
+---
+
+The VBB Telegram Bot uses saved addresses to quickly plan your journeys. You can configure a home address and a default destination address, and manage multiple addresses for different use cases.
+
+## Address types
+
+The bot supports two main address types:
+
+- **Home Address**: Your starting point for most journeys (typically your residence)
+- **Destination Address**: Your most frequent destination (typically your workplace)
+
+<Note>
+  You must configure at least a home address and a destination address during registration before you can use the journey planning features.
+</Note>
+
+## Initial address setup
+
+During your first use of the bot, you'll go through a registration process:
+
+<Steps>
+  <Step title="Enter home address">
+    Provide your home address in the format: `Street name house_number, postal_code City`
+    
+    Example: `Alexanderplatz 1, 10178 Berlin`
+  </Step>
+  
+  <Step title="Confirm home address">
+    The bot will resolve your address and show you the details including:
+    - Street name and number
+    - City and postal code
+    - Coordinates (latitude/longitude)
+    
+    Confirm if the information is correct.
+  </Step>
+  
+  <Step title="Enter destination address">
+    Provide your default destination address using the same format.
+  </Step>
+  
+  <Step title="Confirm destination address">
+    Review and confirm the resolved destination address.
+  </Step>
+  
+  <Step title="Complete registration">
+    Review both addresses and confirm to complete the setup.
+  </Step>
+</Steps>
+
+<Tip>
+  Use the full address format including postal code and city for the most accurate results.
+</Tip>
+
+## Managing existing addresses
+
+After initial setup, you can view and manage your addresses through the address management interface.
+
+### Viewing your addresses
+
+Access the addresses menu to see all your saved addresses. Each address displays:
+- The full address text
+- Current usage type (Home/Destination/No Use)
+- Expand/collapse option for details
+
+### Changing address usage
+
+You can reassign how each saved address is used:
+
+<Steps>
+  <Step title="Open address details">
+    Click on an address to expand its details.
+  </Step>
+  
+  <Step title="Select new usage type">
+    Choose from:
+    - **Home Address**: Use as your journey starting point
+    - **Destination Address**: Use as your default destination
+    - **No Use**: Keep the address saved but not actively used
+  </Step>
+  
+  <Step title="Confirm change">
+    The address usage is updated immediately.
+  </Step>
+</Steps>
+
+<Note>
+  You can only have one home address and one destination address active at a time. If you assign a new address as home, the previous home address automatically changes to "No Use".
+</Note>
+
+## Adding new addresses
+
+<Steps>
+  <Step title="Access address management">
+    Navigate to the addresses section from the main menu.
+  </Step>
+  
+  <Step title="Click Add Address">
+    Select the "Add address" button.
+  </Step>
+  
+  <Step title="Enter address">
+    Type the address in the format: `Street name house_number, postal_code City`
+  </Step>
+  
+  <Step title="Confirm details">
+    Review the resolved address information and confirm.
+  </Step>
+  
+  <Step title="Assign usage type">
+    Choose how you want to use this address (Home/Destination/No Use).
+  </Step>
+</Steps>
+
+## Address data structure
+
+Each saved address includes:
+
+- **Street name**: The street name portion of the address
+- **House number**: Building number
+- **City**: City name (typically within Berlin-Brandenburg)
+- **Postal code (PLZ)**: German postal code
+- **Coordinates**: Latitude and longitude for precise location
+- **Created by**: User ID of the owner
+
+<Tip>
+  Coordinates are automatically resolved from your address and used for finding nearby public transport stops.
+</Tip>
+
+## Address usage in journey planning
+
+When you request journeys:
+
+1. The bot uses your **home address** as the starting point
+2. The bot uses your **destination address** as the endpoint
+3. The system finds the nearest public transport stops to both addresses
+4. Journey options are calculated between these stops
+
+<Note>
+  Walking distance and time to/from stops are included in the total journey time based on your configured walking speed.
+</Note>
+
+## Editing addresses
+
+Currently, addresses cannot be edited directly. To change an address:
+
+1. Add a new address with the correct information
+2. Assign it the desired usage type (Home/Destination)
+3. The old address will automatically become "No Use"
+
+## Best practices
+
+<Accordion title="Save frequently used addresses">
+  Even if you don't use an address as your default home or destination, save it for future use. You can easily switch between saved addresses without re-entering information.
+</Accordion>
+
+<Accordion title="Keep addresses up to date">
+  If you move or change workplace, update your home and destination addresses to ensure accurate journey planning.
+</Accordion>
+
+<Accordion title="Use precise addresses">
+  Include house numbers and postal codes for the most accurate stop matching and walking directions.
+</Accordion>

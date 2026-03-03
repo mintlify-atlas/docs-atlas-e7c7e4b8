@@ -1,0 +1,263 @@
+---
+title: Configuration
+description: Configure the VBB Telegram Bot using the config.toml file
+---
+
+The VBB Telegram Bot uses a TOML configuration file to manage all settings. This guide explains each configuration option and how to set them up correctly.
+
+## Configuration file
+
+The bot reads its configuration from `config.toml` in the project root directory. An example template is provided in `example.toml`.
+
+### Creating your configuration
+
+Copy the example configuration to get started:
+
+```bash
+cp example.toml config.toml
+```
+
+Then edit `config.toml` with your actual values.
+
+<Warning>
+  Never commit `config.toml` to version control. It should be listed in `.gitignore` to prevent exposing your bot token and other sensitive information.
+</Warning>
+
+## Configuration sections
+
+The configuration file is divided into four main sections:
+
+### Bot section
+
+Configures the Telegram bot connection:
+
+```toml
+[bot]
+token = "7167777777:AaBbCcDdEeFfGgHh"
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `token` | string | Yes | Your Telegram bot token from [@BotFather](https://t.me/BotFather) |
+
+<Warning>
+  To get a bot token:
+  1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
+  2. Send `/newbot` and follow the prompts
+  3. Copy the token provided and paste it into your config.toml
+  4. Keep this token secret - anyone with access can control your bot
+</Warning>
+
+### Settings section
+
+Configures general bot behavior:
+
+```toml
+[settings]
+owner_id = 123456789
+throttling_rate = 0.5
+drop_pending_updates = true
+```
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `owner_id` | integer | Yes | - | Your Telegram user ID (bot owner) |
+| `throttling_rate` | float | No | `0.5` | Rate limiting between user requests in seconds |
+| `drop_pending_updates` | boolean | No | `true` | Whether to ignore messages sent while bot was offline |
+
+#### Finding your user ID
+
+To find your Telegram user ID:
+1. Search for [@userinfobot](https://t.me/userinfobot) on Telegram
+2. Send any message to the bot
+3. Copy the "Id" number from the response
+
+#### Throttling rate
+
+The `throttling_rate` setting prevents users from spamming the bot by enforcing a minimum delay between commands. A value of `0.5` means users must wait at least 0.5 seconds between requests.
+
+#### Drop pending updates
+
+When `drop_pending_updates` is `true`, the bot ignores all messages that were sent while it was offline. This prevents processing a large backlog of old messages when restarting the bot.
+
+### Database section
+
+Configures PostgreSQL database connection:
+
+```toml
+[db]
+database_url = ""
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `database_url` | string | No | PostgreSQL connection string (SQLAlchemy format) |
+
+#### Database URL format
+
+The database URL follows the SQLAlchemy connection string format:
+
+```
+postgresql+asyncpg://username:password@host:port/database
+```
+
+Example:
+```toml
+[db]
+database_url = "postgresql+asyncpg://postgres:mypassword@localhost:5432/vbb"
+```
+
+<Warning>
+  If `database_url` is not set in `config.toml`, the bot will attempt to use the `DATABASE_URL` environment variable. This is useful for Docker deployments where the database connection is provided via environment variables.
+</Warning>
+
+#### Docker deployment
+
+When using Docker Compose, leave `database_url` empty in `config.toml`:
+
+```toml
+[db]
+database_url = ""
+```
+
+The `DATABASE_URL` environment variable is set automatically in `docker-compose.yml`:
+
+```yaml
+environment:
+  - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/vbb
+```
+
+### API section
+
+Configures Telegram API settings (optional):
+
+```toml
+[api]
+# id = 2040
+# hash = "b18441a1ff607e10a989891a5462e627"
+# bot_api_url = "https://api.telegram.org"
+```
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `id` | integer | No | `2040` | Telegram API app ID |
+| `hash` | string | No | `"b18441a1ff607e10a989891a5462e627"` | Telegram API app hash |
+| `bot_api_url` | string | No | `"https://api.telegram.org"` | Custom Bot API server URL |
+
+These settings are optional and use the default values from Telegram Desktop Client. You typically don't need to change these unless:
+
+- You're running a [local Bot API server](https://core.telegram.org/bots/api#using-a-local-bot-api-server)
+- You have custom Telegram API credentials for your app
+
+## Complete example
+
+Here's a complete `config.toml` example with all sections:
+
+```toml
+[bot]
+token = "7167777777:AaBbCcDdEeFfGgHh"
+
+[settings]
+owner_id = 123456789
+throttling_rate = 0.5
+drop_pending_updates = true
+
+[db]
+database_url = "postgresql+asyncpg://postgres:password@localhost:5432/vbb"
+
+[api]
+id = 2040
+hash = "b18441a1ff607e10a989891a5462e627"
+bot_api_url = "https://api.telegram.org"
+```
+
+## Configuration validation
+
+The bot validates your configuration on startup. If required fields are missing or invalid, you'll see an error message:
+
+```
+ValueError: Missing field token in section bot
+```
+
+This indicates you need to add the missing field to your `config.toml` file.
+
+## Environment variables
+
+While most configuration is done through `config.toml`, the following environment variables are also supported:
+
+| Variable | Description | Priority |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Used if `db.database_url` is empty |
+| `TZ` | Timezone for the bot and scheduler | System default if not set |
+
+Environment variables are particularly useful for Docker deployments where you want to keep sensitive data separate from configuration files.
+
+## Security best practices
+
+<Warning>
+  Follow these security guidelines to protect your bot:
+</Warning>
+
+1. Never commit `config.toml` to version control
+2. Set restrictive file permissions on `config.toml` (e.g., `chmod 600 config.toml`)
+3. Use environment variables for sensitive data in production
+4. Regularly rotate your bot token if you suspect it's been compromised
+5. Keep your `owner_id` private to prevent unauthorized access to admin features
+6. Use strong database passwords, especially if PostgreSQL is exposed to the network
+
+## Updating configuration
+
+After modifying `config.toml`, restart the bot for changes to take effect:
+
+### Manual installation
+
+```bash
+# Stop the bot (Ctrl+C), then restart:
+python -m app
+```
+
+### Docker deployment
+
+```bash
+docker-compose restart app
+```
+
+Most configuration changes require a restart, except for some database settings that may be read from environment variables at runtime.
+
+## Troubleshooting
+
+### Config file not found
+
+Error: `FileNotFoundError: Config file not found: config.toml no such file.`
+
+Solution: Ensure `config.toml` exists in the project root directory. Copy from `example.toml` if needed.
+
+### Invalid token format
+
+Error: Bot fails to connect with authentication error.
+
+Solution: Verify your bot token:
+- Check for extra spaces or quotes
+- Ensure the format is `NNNNNNNNN:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
+- Get a new token from @BotFather if the old one is invalid
+
+### Database connection failed
+
+Error: `asyncpg.exceptions.InvalidCatalogNameError: database "vbb" does not exist`
+
+Solution: Create the database:
+```sql
+CREATE DATABASE vbb;
+```
+
+### Missing required field
+
+Error: `ValueError: Missing field owner_id in section settings`
+
+Solution: Add the missing field to the corresponding section in `config.toml`.
+
+## Next steps
+
+- Learn about [manual installation](/deployment/installation)
+- Set up [Docker deployment](/deployment/docker)
+- Explore the bot's features and commands

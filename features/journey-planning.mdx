@@ -1,0 +1,104 @@
+---
+title: Journey planning
+description: Learn how to plan your public transport journeys from home to your destination
+---
+
+The VBB Telegram Bot helps you plan public transport journeys in the Berlin-Brandenburg area. Once you've configured your home and destination addresses, you can quickly get journey options with just a few taps.
+
+## How journey planning works
+
+The bot retrieves journey options from your configured home address to your destination address, taking into account your preferences like walking speed, maximum transfers, and preferred transport types.
+
+<Steps>
+  <Step title="Access journey planning">
+    From the main menu, select the journey planning option. The bot will automatically use your saved home and default destination addresses.
+  </Step>
+  
+  <Step title="View journey options">
+    The bot displays multiple journey options in a paginated view. Each journey shows:
+    - Departure and arrival times
+    - Total journey duration
+    - Number of transfers
+    - Transport modes used
+    - Walking distances
+    - Platform information
+  </Step>
+  
+  <Step title="Navigate between options">
+    Use the Previous/Next buttons to browse through different journey options. The current page indicator shows which journey you're viewing (e.g., "1 / 10").
+  </Step>
+</Steps>
+
+## Journey types
+
+### Scheduled journeys (arrival time)
+
+By default, the bot plans journeys to arrive at your destination by your configured arrival time. This is useful for regular commutes where you need to arrive at work by a specific time.
+
+<Tip>
+  The bot calculates backwards from your desired arrival time to show you when you need to leave home.
+</Tip>
+
+### Immediate journeys (now)
+
+You can also get journey options for leaving immediately. This shows departures starting from the current time, which is useful for spontaneous trips.
+
+## Using geolocation for destinations
+
+Instead of using your saved destination address, you can share your current location or any location to get journey options to that specific place.
+
+<Steps>
+  <Step title="Share location">
+    Use Telegram's location sharing feature to send a location to the bot.
+  </Step>
+  
+  <Step title="Confirm location">
+    The bot displays the resolved address and asks you to confirm the action.
+  </Step>
+  
+  <Step title="Get journeys">
+    Select "Get journeys to this location" to see your journey options to that destination.
+  </Step>
+</Steps>
+
+<Note>
+  Location-based journeys are temporary and don't change your saved default destination address.
+</Note>
+
+## Journey information details
+
+Each journey option includes comprehensive information:
+
+- **Departure time**: When to leave from your home address
+- **Arrival time**: When you'll arrive at your destination
+- **Duration**: Total journey time including transfers and walking
+- **Transfers**: Number of times you need to change vehicles
+- **Legs**: Individual segments of your journey showing:
+  - Transport line (e.g., S7, U2, Bus 100)
+  - Direction/destination of the line
+  - Departure and arrival stops
+  - Platform/track information
+  - Duration of each leg
+- **Walking segments**: Distance and time for walking portions
+
+## Journey preferences
+
+Your journey results are influenced by several preferences you can configure:
+
+- **Walking speed**: Affects calculated walking times (slow/normal/fast)
+- **Maximum transfers**: Limits how many times you need to change vehicles
+- **Maximum journeys**: Controls how many journey options are shown
+- **Minimum transfer time**: Additional buffer time between connections
+- **Transport types**: Which modes of transport to include in results
+
+<Tip>
+  See [User preferences](/configuration/preferences) and [Transport types](/configuration/transport-types) to learn how to configure these settings.
+</Tip>
+
+## Refreshing journey data
+
+Journey information is retrieved in real-time from the VBB transport API. If you need updated information (e.g., due to delays or schedule changes), simply request journeys again.
+
+<Warning>
+  Journey data reflects the current schedule and may not account for real-time delays or disruptions. Always check platform displays at stations for the most current information.
+</Warning>

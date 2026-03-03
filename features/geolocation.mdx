@@ -1,0 +1,208 @@
+---
+title: Using geolocation
+description: Find nearby public transport stops and plan journeys to any location using Telegram's location sharing
+---
+
+The VBB Telegram Bot can work with location data to help you plan journeys to anywhere in the Berlin-Brandenburg area. You can share any location in Telegram to get journey options to that destination.
+
+## How geolocation works
+
+When you share a location with the bot:
+
+1. The bot receives the GPS coordinates (latitude/longitude)
+2. It resolves these coordinates to a street address
+3. You can then use this location as a journey destination
+4. The bot finds nearby public transport stops and plans your route
+
+<Note>
+  Geolocation features work with any location shared in Telegram - your current location, a dropped pin on the map, or a location from contacts and places.
+</Note>
+
+## Sharing your location
+
+<Steps>
+  <Step title="Open location sharing">
+    In your Telegram chat with the VBB Bot, tap the attachment icon and select "Location".
+  </Step>
+  
+  <Step title="Choose location type">
+    Select either:
+    - **Send My Current Location**: Share where you are right now
+    - **Share Live Location**: Share real-time location updates
+    - **Choose Location on Map**: Pick any location by dropping a pin
+  </Step>
+  
+  <Step title="Send to bot">
+    Confirm the location to send it to the bot.
+  </Step>
+  
+  <Step title="Review resolved address">
+    The bot displays the address it resolved from the coordinates, including:
+    - Street name and number
+    - Postal code and city
+    - Coordinates
+  </Step>
+</Steps>
+
+## Getting journeys to a location
+
+After sharing a location:
+
+<Steps>
+  <Step title="Confirm location">
+    Review the resolved address shown by the bot to ensure it's correct.
+  </Step>
+  
+  <Step title="Select action">
+    Tap "Get journeys to this location" to plan your route.
+  </Step>
+  
+  <Step title="View journey options">
+    The bot displays journey options from your home address to the shared location.
+  </Step>
+  
+  <Step title="Navigate options">
+    Browse through different journey options using Previous/Next buttons.
+  </Step>
+</Steps>
+
+<Tip>
+  Location-based journeys use your current preferences (walking speed, transport types, etc.) just like regular journeys.
+</Tip>
+
+## Finding nearby stops
+
+The bot can find public transport stops near your home address, which is useful for:
+
+- Seeing what stops are within walking distance
+- Checking departure times from nearby stops
+- Understanding your local transport options
+
+### Nearby stops feature
+
+The nearby stops feature:
+
+- Searches within 500 meters of your home address by default
+- Lists all public transport stops within range
+- Shows upcoming departures from each stop
+- Includes information about available transport lines
+
+<Steps>
+  <Step title="Access nearby stops">
+    From the main menu, select the option to view nearby stops.
+  </Step>
+  
+  <Step title="View stop information">
+    Each stop displays:
+    - Stop name and location
+    - Distance from your home address
+    - Available transport lines
+    - Next departures with times
+  </Step>
+  
+  <Step title="Navigate between stops">
+    Use the pagination buttons to browse through all nearby stops.
+  </Step>
+</Steps>
+
+## Location data details
+
+When working with locations, the bot processes:
+
+### Coordinates
+- **Latitude**: North-south position
+- **Longitude**: East-west position
+- **Precision**: GPS coordinates are typically accurate within a few meters
+
+### Resolved address
+The bot uses the VBB transport API to convert coordinates into:
+- Street name
+- House number
+- Postal code
+- City name
+
+<Warning>
+  Address resolution is automatic but may not always be perfectly accurate, especially for locations without nearby street addresses (parks, open areas, etc.).
+</Warning>
+
+## Use cases for geolocation
+
+### Meeting someone at a new location
+
+When meeting at an unfamiliar place:
+
+1. Have the other person share their location with you
+2. Forward that location to the VBB Bot
+3. Get journey options to reach them
+
+### Exploring the city
+
+When you see an interesting place on the map:
+
+1. Drop a pin on that location in Telegram
+2. Share it with the bot
+3. See how to get there from home
+
+### Finding transport from your current position
+
+If you're away from home:
+
+1. Share your current location
+2. The bot can show nearby stops and departures
+3. Plan your next journey from where you are
+
+<Note>
+  Currently, the bot primarily supports journeys starting from your saved home address. Using your current location as a journey starting point is supported through the location resolution system.
+</Note>
+
+## Temporary vs. saved locations
+
+Important distinctions:
+
+- **Temporary**: Locations shared via Telegram are used for immediate journey planning only
+- **Saved**: Only addresses saved through the address management system persist for future use
+- **No automatic saving**: Shared locations don't automatically become saved addresses
+
+<Tip>
+  If you frequently travel to a location, add it as a saved address through the address management feature rather than sharing the location each time.
+</Tip>
+
+## Location privacy
+
+The bot handles your location data responsibly:
+
+- Location data is used only for journey planning
+- Shared locations are not permanently stored (only saved addresses persist)
+- The bot processes coordinates through the VBB API for address resolution
+- No location history is maintained beyond saved addresses
+
+## Search radius for nearby stops
+
+The default search radius is 500 meters, which typically includes:
+
+- 2-8 stops depending on the density of the area
+- Major stops like S-Bahn and U-Bahn stations
+- Bus stops on nearby streets
+- Tram stops within walking distance
+
+<Note>
+  The search radius is configured in the system and ensures you see stops that are realistically within walking distance.
+</Note>
+
+## Best practices
+
+<Accordion title="Share precise locations">
+  When dropping a pin on the map, zoom in close to ensure you're selecting the exact spot you want to reach. This ensures accurate journey planning.
+</Accordion>
+
+<Accordion title="Verify resolved addresses">
+  Always check the address shown by the bot after sharing a location. If it doesn't look right, try adjusting the pin position slightly.
+</Accordion>
+
+<Accordion title="Save frequently used locations">
+  Convert locations you use regularly into saved addresses through the address management system for quicker access.
+</Accordion>
+
+<Accordion title="Check nearby stops before traveling">
+  Before leaving for an unfamiliar area, check what stops are nearby to understand your transport options upon arrival.
+</Accordion>

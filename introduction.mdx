@@ -1,0 +1,103 @@
+---
+title: Introduction
+description: Your personal journey companion for Berlin-Brandenburg public transport via Telegram
+---
+
+The **VBB Telegram Bot** is your everyday journey planning assistant for the Berlin-Brandenburg public transport network (VBB). Get real-time journey information, manage your favorite locations, and receive automated daily commute notifications—all through Telegram.
+
+## What is VBB Telegram Bot?
+
+VBB Telegram Bot connects to the [VBB API](https://v6.vbb.transport.rest/) to provide comprehensive public transport information directly in your Telegram chat. Whether you're commuting to work, planning a trip, or checking nearby departures, the bot streamlines your journey planning experience.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Journey planning" icon="route" href="#journey-planning">
+    Get detailed route information with real-time departure times and transfer details
+  </Card>
+  <Card title="Address management" icon="location-dot" href="#address-management">
+    Save home and destination addresses for quick journey queries
+  </Card>
+  <Card title="Daily notifications" icon="bell" href="#daily-notifications">
+    Receive automated morning commute updates at your preferred time
+  </Card>
+  <Card title="Nearby stops" icon="map-pin" href="#nearby-stops">
+    Find stops and real-time departures near any location
+  </Card>
+</CardGroup>
+
+## Journey planning
+
+Plan your trips with comprehensive route information including:
+
+- **Multiple route options** - Compare different journey alternatives
+- **Real-time departures** - Get up-to-date departure and arrival times
+- **Transfer details** - See all connections and walking times between stops
+- **Transport modes** - Filter by bus, tram, subway, train, ferry, and regional services
+- **Walking speed** - Customize routes based on your walking pace
+
+<Tip>
+Use the `/menu` command and select "🗺 Get journeys" to plan your next trip.
+</Tip>
+
+## Address management
+
+Save and organize your frequently used locations:
+
+- **Home address** - Set your starting point for daily commutes
+- **Destination address** - Configure your default arrival location
+- **Multiple addresses** - Store additional locations for quick access
+- **Address types** - Assign roles (home, destination, or no use) to saved addresses
+
+The bot uses these addresses to provide instant journey information without manual input each time.
+
+## Daily notifications
+
+Never miss your morning commute with automated notifications:
+
+- **Scheduled updates** - Receive journey information at your configured check time
+- **Arrival-based planning** - Routes calculated to reach your destination by your specified arrival time
+- **One notification per day** - Notifications reset at midnight to avoid spam
+- **Background service** - Runs continuously to check for scheduled updates
+
+<Note>
+Configure your arrival time and check time in the settings menu (⚙️ Settings) to enable daily notifications.
+</Note>
+
+## Nearby stops
+
+Find public transport options around you:
+
+- **Geolocation support** - Send your location in Telegram to find nearby stops
+- **Distance filtering** - Search within 500 meters by default
+- **Next departures** - View upcoming departures from each stop
+- **Line information** - See which lines service each stop
+
+Simply share your location in the chat or select "🚌 Get nearby stops" from the menu.
+
+## Customization options
+
+Tailor the bot to your preferences:
+
+- **Walking speed** - Choose slow, normal, or fast walking pace
+- **Transfer settings** - Set minimum transfer time and maximum number of transfers
+- **Transport filters** - Enable or disable specific transport modes (bus, tram, subway, etc.)
+- **Journey results** - Configure how many route alternatives to display
+
+## Technology stack
+
+Built with modern Python technologies:
+
+- **aiogram 3.x** - Telegram Bot API framework
+- **aiogram-dialog** - Interactive UI dialogs
+- **SQLAlchemy** - Async PostgreSQL database for user data
+- **APScheduler** - Background job scheduling
+- **VBB REST API** - Real-time transport data from [v6.vbb.transport.rest](https://v6.vbb.transport.rest/)
+
+## Get started
+
+Ready to start using the bot? Check out the [Quickstart](/quickstart) guide to set up the bot and plan your first journey.
+
+<Card title="Quickstart" icon="rocket" href="/quickstart">
+  Get the bot up and running in minutes
+</Card>

@@ -1,0 +1,176 @@
+---
+title: Automated notifications
+description: Set up daily journey notifications to receive your commute information automatically
+---
+
+The VBB Telegram Bot can automatically send you daily journey notifications at a scheduled time. This feature is perfect for regular commutes, ensuring you always know when to leave home to arrive at work on time.
+
+## How notifications work
+
+The notification system works by:
+
+1. Checking your configured **check time** every day
+2. Planning journeys from your home to your destination address
+3. Calculating when you need to leave to arrive by your **arrival time**
+4. Automatically sending you the journey options in Telegram
+
+<Note>
+  Notifications use your saved home and destination addresses along with all your configured preferences (walking speed, transport types, etc.).
+</Note>
+
+## Notification timing
+
+You configure two key times for the notification system:
+
+### Check time
+
+The **check time** is when the bot sends you the journey notification each day. This should be set to a time when you're typically getting ready to leave for work.
+
+**Example**: If you usually leave home around 7:30 AM, set your check time to 7:00 AM to receive journey options with enough time to prepare.
+
+### Arrival time
+
+The **arrival time** is when you need to arrive at your destination. The bot plans journeys backwards from this time to show you when to depart.
+
+**Example**: If you need to be at work by 9:00 AM, set your arrival time to 9:00 AM. The bot will show journeys that arrive by this time.
+
+<Tip>
+  Set your arrival time a few minutes before you actually need to arrive to build in a buffer for unexpected delays.
+</Tip>
+
+## Configuring notification times
+
+<Steps>
+  <Step title="Open settings">
+    Navigate to the settings menu from the main menu.
+  </Step>
+  
+  <Step title="Change check time">
+    Select "Change check time" and enter the time in 24-hour format (HH:MM).
+    
+    Example: `07:00` for 7:00 AM
+  </Step>
+  
+  <Step title="Change arrival time">
+    Select "Change arrival time" and enter your desired arrival time in 24-hour format.
+    
+    Example: `09:00` for 9:00 AM
+  </Step>
+  
+  <Step title="Verify settings">
+    Return to the settings overview to confirm your times are correctly configured.
+  </Step>
+</Steps>
+
+## Notification behavior
+
+Once configured, the notification system:
+
+- Runs continuously in the background
+- Checks all registered users every 15 seconds
+- Sends notifications when the current time matches a user's check time
+- Only sends one notification per day (uses `is_notified` flag)
+- Resets notification flags daily to allow the next day's notification
+
+<Warning>
+  Notifications are sent once per day at your check time. If you miss the notification, you won't receive another until the next day at the same time.
+</Warning>
+
+## Notification content
+
+When you receive a notification, it includes:
+
+- Multiple journey options (based on your `max_journeys` setting)
+- Full journey details for each option:
+  - Departure time from home
+  - Arrival time at destination
+  - Total duration
+  - Number of transfers
+  - All transport legs with line numbers and directions
+  - Platform information
+  - Walking segments
+- Navigation buttons to browse through different journey options
+
+<Note>
+  The notification message is interactive - you can navigate through different journey options using the Previous/Next buttons directly in the message.
+</Note>
+
+## Notification schedule examples
+
+### Early morning commute
+
+- **Check time**: 06:30
+- **Arrival time**: 08:00
+- **Result**: Receive journey options at 6:30 AM to arrive at work by 8:00 AM
+
+### Flexible morning schedule
+
+- **Check time**: 08:00
+- **Arrival time**: 09:30
+- **Result**: Receive journey options at 8:00 AM to arrive by 9:30 AM
+
+### Afternoon shift
+
+- **Check time**: 13:00
+- **Arrival time**: 15:00
+- **Result**: Receive journey options at 1:00 PM to arrive by 3:00 PM
+
+## Disabling notifications
+
+Currently, there's no direct toggle to disable notifications. However, you can effectively disable them by:
+
+- Setting your check time to a time when you won't need the information (e.g., 23:59)
+- Or leaving the notification unread - the system tracks sent notifications
+
+<Tip>
+  If you're on vacation or don't need notifications temporarily, consider setting the check time far in the future. You can easily change it back when needed.
+</Tip>
+
+## Notification reliability
+
+The notification system is designed to be reliable:
+
+- Runs continuously as a background process
+- Checks every 15 seconds to ensure timely delivery
+- Uses Berlin timezone (`Europe/Berlin`) for all time comparisons
+- Prevents duplicate notifications with the `is_notified` flag
+- Automatically resets for the next day
+
+<Note>
+  Notifications are sent based on the minute precision. For example, if your check time is 07:00, you'll receive the notification sometime during the 07:00-07:01 minute window.
+</Note>
+
+## Troubleshooting
+
+<Accordion title="Not receiving notifications">
+  Check that:
+  - Your check time and arrival time are correctly configured in settings
+  - The bot has permission to send you messages in Telegram
+  - Your home and destination addresses are properly saved
+  - You haven't already received today's notification (only one per day)
+</Accordion>
+
+<Accordion title="Wrong journey times">
+  Verify that:
+  - Your arrival time is set correctly
+  - Your timezone preferences are correct (system uses Berlin time)
+  - Your home and destination addresses are accurate
+</Accordion>
+
+<Accordion title="Too many or too few journey options">
+  Adjust your `max_journeys` setting in preferences to control how many journey options appear in the notification.
+</Accordion>
+
+## Best practices
+
+<Tip>
+  Set your check time 30-45 minutes before you typically need to leave. This gives you time to review options, get ready, and handle any unexpected delays.
+</Tip>
+
+<Tip>
+  Set your arrival time 5-10 minutes before you actually need to be there to account for walking time from the final stop to your destination building.
+</Tip>
+
+<Tip>
+  Review your notification settings weekly, especially if your schedule changes seasonally or you adjust your commute routine.
+</Tip>

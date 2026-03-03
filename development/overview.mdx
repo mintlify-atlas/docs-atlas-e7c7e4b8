@@ -1,0 +1,244 @@
+---
+title: Architecture overview
+description: Technical architecture and component structure of the VBB Telegram Bot
+---
+
+## System architecture
+
+The VBB Telegram Bot is built as a modern asynchronous Python application with the following core components:
+
+- **Bot Framework**: aiogram 3.x for Telegram Bot API integration
+- **Dialog System**: aiogram-dialog for conversational UI flows
+- **Database**: SQLAlchemy 2.0 (async) with PostgreSQL
+- **Background Jobs**: APScheduler for scheduled tasks
+- **External API**: VBB (Verkehrsverbund Berlin-Brandenburg) REST API v6
+
+## Application startup flow
+
+The bot initializes through a structured startup sequence in `app/__main__.py:62`:
+
+```python
+async def main():
+    logging_level = logging.DEBUG if app.arguments.test else logging.INFO
+    coloredlogs.install(level=logging_level, milliseconds=True)
+    logging.warning("Starting bot...")
+
+    app.owner_id = app.config.settings.owner_id
+
+    # Initialize database connection
+    db_url = config.db.database_url
+    app.sessionmanager = await db.init(db_url)
+
+    # Configure Telegram Bot API session
+    session = AiohttpSession(
+        api=TelegramAPIServer.from_base(config.api.bot_api_url))
+    token = config.bot.token
+    bot_settings = {"session": session}
+    app.bot = Bot(token,
+                  default=DefaultBotProperties(
+                      parse_mode=ParseMode.HTML),
+                  **bot_settings)
+
+    storage = MemoryStorage()
+    app.dp = Dispatcher(storage=storage)
+    app.dp.startup.register(on_startup)
+    app.dp.shutdown.register(on_shutdown)
+
+    # Start background services
+    from app.vbb.service.checker import check_journeys
+    asyncio.create_task(check_journeys())
+
+    from app.utils import add_scheduler_jobs
+    await add_scheduler_jobs()
+
+    # Begin polling
+    await app.dp.start_polling(app.bot)
+```
+
+### Startup lifecycle
+
+1. **Configuration Loading**: Parse `config.toml` and command-line arguments
+2. **Database Initialization**: Create async session manager with connection pool
+3. **Bot Instance Creation**: Configure aiogram Bot with HTML parse mode
+4. **Dispatcher Setup**: Create dispatcher with memory-based FSM storage
+5. **Middleware Registration**: Register throttling and database session middlewares
+6. **Handler Registration**: Load owner and user routers with commands and dialogs
+7. **Background Services**: Launch journey checker loop and APScheduler jobs
+8. **Polling Start**: Begin receiving updates from Telegram
+
+## Component structure
+
+### Core modules
+
+```
+app/
+├── __main__.py          # Application entry point
+├── __init__.py          # Global instances (bot, dp, scheduler)
+├── config.py            # Configuration management
+├── common.py            # Shared types and utilities
+├── db/                  # Database layer
+│   ├── base.py         # SQLAlchemy Base
+│   ├── models.py       # User, Address, JourneyDB models
+│   └── session.py      # Async session management
+├── handlers/            # Command and message handlers
+│   ├── owner/          # Bot owner commands (ping, stats)
+│   └── user/           # User commands (start, help)
+├── dialogs/             # aiogram-dialog conversation flows
+│   ├── states.py       # FSM state definitions
+│   ├── main.py         # Main menu dialog
+│   ├── register.py     # User registration flow
+│   ├── journeys.py     # Journey search interface
+│   ├── settings.py     # User preferences
+│   └── addresses.py    # Address management
+├── middlewares/         # Request processing middlewares
+│   ├── main.py         # Database session injection
+│   └── throttling.py   # Rate limiting
+├── vbb/                 # VBB API integration
+│   ├── func.py         # API wrapper functions
+│   ├── models/         # Journey, Leg, Line data models
+│   ├── service/        # Background services
+│   └── utils.py        # Time conversion helpers
+├── utils/               # Utility functions
+│   ├── scheduler_jobs.py  # APScheduler job definitions
+│   ├── message_builder.py # Message formatting
+│   └── address_util.py    # Address string formatting
+└── ui/
+    └── commands.py      # Bot command menu setup
+```
+
+## Handler and dialog architecture
+
+The bot uses a two-tier routing system:
+
+### Handler routers
+
+Handlers are organized by user role in `app/handlers/__init__.py:4`:
+
+```python
+def get_handlers_router() -> Router:
+    from .owner import get_owner_router
+    from .user import get_user_router
+
+    router = Router()
+
+    owner_router = get_owner_router()
+    user_router = get_user_router()
+
+    router.include_router(owner_router)
+    router.include_router(user_router)
+
+    return router
+```
+
+- **Owner Router**: Administrative commands restricted to bot owner
+- **User Router**: Standard user commands and dialog entry points
+
+### Dialog system
+
+The bot uses aiogram-dialog for stateful conversations. Each dialog is defined with:
+
+- **States**: FSM state groups in `dialogs/states.py`
+- **Windows**: UI screens with keyboards and text
+- **Getters**: Async functions that fetch data for rendering
+- **Handlers**: Button click handlers and input processors
+
+#### State groups
+
+```python
+class RegisterSG(StatesGroup):
+    MAIN = State()
+    HOME_ADDRESS = State()
+    DESTINATION_ADDRESS = State()
+    FINISH = State()
+
+class JourneysSG(StatesGroup):
+    MAIN = State()
+
+class SettingsSG(StatesGroup):
+    MAIN = State()
+    CHANGE = State()
+```
+
+## Middleware pipeline
+
+Two middlewares process all updates:
+
+### Database session middleware
+
+Injects an async SQLAlchemy session into every handler via `middleware_data`:
+
+```python
+async def handler(message: Message, f: FMT, **kwargs):
+    user = await f.db.get_user(message.from_user.id)
+    # Session automatically committed/rolled back
+```
+
+### Throttling middleware
+
+Implements rate limiting to prevent abuse:
+- Configurable delay between requests per user
+- "Too many requests" error message on throttle
+
+## Data flow
+
+### Journey search flow
+
+1. User opens journeys dialog (via command or scheduled notification)
+2. Dialog getter function fetches user preferences from database
+3. `get_journeys()` calls VBB API with user's home/destination addresses
+4. API response parsed into `Journey` objects with nested `Leg` models
+5. Message builder formats journey data into HTML
+6. User navigates results with prev/next pagination buttons
+
+### Registration flow
+
+1. User sends `/start` command
+2. Bot checks if user exists in database
+3. If new user, launches registration dialog
+4. User provides home address (text or location)
+5. Address geocoded and stored in `addresses` table
+6. User provides destination address
+7. User record created with foreign keys to addresses
+8. Main menu dialog launched
+
+## Global state management
+
+Global instances are stored in `app/__init__.py:17`:
+
+```python
+owner_id: int
+dp: Dispatcher
+sessionmanager: sessionmaker
+bot: Bot
+config: Config = parse_config("config.toml")
+arguments = parse_arguments()
+scheduler = AsyncIOScheduler()
+```
+
+These are initialized in `__main__.py` and accessed by importing:
+
+```python
+from app import bot, dp, sessionmanager, scheduler
+```
+
+## Error handling
+
+The application uses Python's standard logging module with coloredlogs:
+- Debug level for test mode (`--test` flag)
+- Info level for production
+- All VBB API calls logged with full URLs
+- Database operations log errors with stack traces
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Database schema" icon="database" href="/development/database-schema">
+    Learn about the User, Address, and JourneyDB models
+  </Card>
+  <Card title="VBB API integration" icon="plug" href="/development/vbb-api-integration">
+    Explore the VBB REST API wrapper functions
+  </Card>
+  <Card title="Background services" icon="clock" href="/development/background-services">
+    Understand scheduled jobs and notifications
+  </Card>
+</CardGroup>
