@@ -1,0 +1,74 @@
+{
+  "projectType": "saas",
+  "projectName": "VBB Telegram Bot",
+  "projectDescription": "Personal journey companion for Berlin-Brandenburg public transport with real-time updates and automated notifications.",
+  "theme": "almond",
+  "primaryColor": "#0066CC",
+  "lightColor": "#4D94DB",
+  "darkColor": "#004999",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "User Guide",
+            "pages": [
+              "features/journey-planning",
+              "features/address-management",
+              "features/notifications",
+              "features/geolocation",
+              "configuration/preferences",
+              "configuration/transport-types"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/installation",
+              "deployment/docker",
+              "deployment/configuration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Architecture",
+            "pages": [
+              "development/overview",
+              "development/database-schema",
+              "development/vbb-api-integration",
+              "development/background-services"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Real-time journey planning with VBB API",
+    "Automated daily commute notifications",
+    "Address database management",
+    "Geolocation-based stop lookup",
+    "Customizable transport preferences",
+    "Background journey monitoring service"
+  ],
+  "publicApiSurface": [
+    "Journey planning queries",
+    "Stop departures lookup",
+    "Address management",
+    "User preferences configuration",
+    "Notification scheduling",
+    "Geolocation parsing"
+  ]
+}
